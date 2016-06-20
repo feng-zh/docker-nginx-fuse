@@ -1,0 +1,13 @@
+web:
+  images: fengzhou/nginx-sshfs
+  devices:
+    - /dev/fuse
+  cap_add:
+    - SYS_ADMIN
+  ports:
+    - "80:80"
+  environment:
+    - REMOTE_URL=example.com
+    - REMOTE_PATH=/remote/path
+    - REMOTE_USER=example
+    - REMOTE_PASSWORD=password
