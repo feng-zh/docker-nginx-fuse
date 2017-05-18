@@ -1,5 +1,5 @@
 web:
-  images: fengzhou/nginx-sshfs
+  image: fengzhou/nginx-fuse
   devices:
     - /dev/fuse
   cap_add:
@@ -7,7 +7,13 @@ web:
   ports:
     - "80:80"
   environment:
-    - REMOTE_URL=example.com
-    - REMOTE_PATH=/remote/path
-    - REMOTE_USER=example
-    - REMOTE_PASSWORD=password
+    - SSH_REMOTE_HOST=example.com
+    - SSH_REMOTE_PATH=/remote/path
+    - SSH_LOCAL_PATH=/ssh_path
+    - SSH_REMOTE_USER=example
+    - SSH_REMOTE_PASSWORD=password
+    - FTP_REMOTE_HOST=example.com
+    - FTP_REMOTE_PATH=/remote/path
+    - FTP_LOCAL_PATH=/ftp_path
+    - FTP_REMOTE_USER=example
+    - FTP_REMOTE_PASSWORD=password
