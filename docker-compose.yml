@@ -17,3 +17,11 @@ web:
     - FTP_LOCAL_PATH=/ftp_path
     - FTP_REMOTE_USER=example
     - FTP_REMOTE_PASSWORD=password
+    - TYPE_1=ssh
+    - REMOTE_HOST_1=example.com
+    - REMOTE_PATH_1=/remote/path
+    - LOCAL_PATH_1=/ssh_path1
+    - REMOTE_USER_1=example
+    - REMOTE_KEY_1=/mnt/id_rsa
+  volumes:
+    - ~/.ssh/id_rsa:/mnt/id_rsa

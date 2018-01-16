@@ -32,6 +32,12 @@ function enable_ssh() {
 	if [ -f /root/.ssh/id_rsa ]; then
 		echo "SSH key found at '/root/.ssh/id_rsa'"
 		PLACEHOLDER_SSH_KEY="-o IdentityFile=/root/.ssh/id_rsa"
+	elif [ -n "${SSH_REMOTE_KEY}" -a -e "${SSH_REMOTE_KEY}" ]; then
+		# Fix permission
+		_TMP_KEY_FILE=/tmp/.ssh_key.${RANDOM}
+		cp $SSH_REMOTE_KEY ${_TMP_KEY_FILE}
+		chmod 400 ${_TMP_KEY_FILE}
+		PLACEHOLDER_SSH_KEY="-o IdentityFile=${_TMP_KEY_FILE}"
 	else
 		PLACEHOLDER_SSH_KEY=""
 	fi
@@ -89,7 +95,7 @@ function enable_ftp() {
 
 	FTPFS_CMD="curlftpfs ftp://${FTP_REMOTE_HOST}/${FTP_REMOTE_PATH} /usr/share/nginx/html/${FTP_LOCAL_PATH} ${OTHER_OPTIONS}"
 
-        ${FTPFS_CMD}
+	${FTPFS_CMD}
 }
 
 if [ -n "${SSH_REMOTE_HOST}" ]; then
@@ -107,6 +113,55 @@ if [ -n "${FTP_REMOTE_HOST}" ]; then
 		exit 1 
 	fi
 fi
+
+# New implementation to support multiple ssh/ftp
+i=1
+while true; do
+	_var="TYPE_$i"
+	case "${!_var}" in 
+		ssh)
+			_var="LOCAL_PATH_$i"
+			SSH_LOCAL_PATH="${!_var}"
+			_var="REMOTE_HOST_$i"
+			SSH_REMOTE_HOST="${!_var}"
+			_var="REMOTE_PATH_$i"
+			SSH_REMOTE_PATH="${!_var}"
+			_var="REMOTE_USER_$i"
+			SSH_REMOTE_USER="${!_var}"
+			_var="REMOTE_PASSWORD_$i"
+			SSH_REMOTE_PASSWORD="${!_var}"
+			_var="REMOTE_KEY_$i"
+			SSH_REMOTE_KEY="${!_var}"
+			enable_ssh
+			if [[ $? -ne 0 ]]; then
+				echo "SSH Fuse startup error, exiting..."
+				exit 1 
+			fi
+		;;
+		ftp)
+			_var="LOCAL_PATH_$i"
+			FTP_LOCAL_PATH="${!_var}"
+			_var="REMOTE_HOST_$i"
+			FTP_REMOTE_HOST="${!_var}"
+			_var="REMOTE_PATH_$i"
+			FTP_REMOTE_PATH="${!_var}"
+			_var="REMOTE_USER_$i"
+			FTP_REMOTE_USER="${!_var}"
+			_var="REMOTE_PASSWORD_$i"
+			FTP_REMOTE_PASSWORD="${!_var}"
+			enable_ftp
+			if [[ $? -ne 0 ]]; then
+				echo "FTP Fuse startup error, exiting..."
+				exit 1 
+			fi
+		;;
+		*)
+			break
+		;;
+	esac
+    i=$((i+1))
+done
+
 
 if [[ $? -eq 0 ]]; then
 	echo "Start nginx"
